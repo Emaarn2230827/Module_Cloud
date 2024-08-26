@@ -1,5 +1,4 @@
 "use client";
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import init from '../common/init'; // Import auth from the updated file
@@ -34,14 +33,14 @@ export function Login() {
           <div className="card border-0 bg-light shadow">
             <div className="card-body p-5">
               <h2 className="card-title text-center mb-4">Welcome on ToDoList </h2>
-              <p>Don't have an account? 
+              <p>Don't have an account?  
                 <Link href="/inscription" passHref>
                  Sign Up
                 </Link>
               </p>
               <form onSubmit={submitForm}>
                 <div className="form-group">
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">Email *</label>
                   <input 
                     type="email" 
                     className="form-control" 
@@ -52,7 +51,7 @@ export function Login() {
                 </div>
                 <br />
                 <div className="form-group">
-                  <label htmlFor="password">Password</label>
+                  <label htmlFor="password">Password *</label>
                   <input 
                     type="password" 
                     className="form-control" 
@@ -62,7 +61,7 @@ export function Login() {
                   />
                 </div>
                 <br />
-                <button type="submit" className="btn btn-danger btn-block">login</button>
+                <button type="submit" className="btn btn-primary btn-block">login</button>
               </form>
             </div>
           </div>

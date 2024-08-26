@@ -3,10 +3,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import init from '../common/init'
 import {  createUserWithEmailAndPassword } from "firebase/auth"
+import ErrorModal from '../Components/modal';
 
 export function Inscription() {
   const {auth} = init()
   const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   //Appelé lorsqu'on envoie le formulaire
   function submitForm(e){
     e.preventDefault()
@@ -22,6 +25,8 @@ export function Inscription() {
         router.push('../accueil');
       })
       .catch((error) => {
+        setErrorMessage("Email adress already exists or/and password must be at least 8 characters long"); // Set error message
+        setShowModal(true); // Show error modal
         console.log(error.message)
       })
   }
@@ -35,7 +40,7 @@ export function Inscription() {
               <h2 className="card-title text-center mb-4">create an account ToDoList</h2>
               <form onSubmit={submitForm}>
                 <div className="form-group">
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">Email *</label>
                   <input 
                     type="email" 
                     className="form-control" 
@@ -46,14 +51,15 @@ export function Inscription() {
                 </div>
                 <br />
                 <div className="form-group">
-                  <label htmlFor="password">Password</label>
+                  <label htmlFor="password">Password *</label>
                   <input 
                     type="password" 
                     className="form-control" 
                     name="password" 
                     placeholder="Enter your password" 
-                    required
+                    required minLength="8"
                   />
+                    <small className="form-text text-danger">Your password must be at least 8 characters long.</small>
                 </div>
                 <br />
                 <button type="submit" className="btn btn-danger btn-block">save</button>
@@ -62,6 +68,11 @@ export function Inscription() {
           </div>
         </div>
       </div>
+      <ErrorModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        message={errorMessage}
+      />
     </div>
     );
 }

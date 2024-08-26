@@ -1,5 +1,6 @@
 
 import Header from '../Components/header';
+import TaskList from '../Components/taskList';
 
  function Accueil()
 {
@@ -7,6 +8,8 @@ import Header from '../Components/header';
     return(
     <>
         <Header/>
+        <br/>
+        <TaskList/>
     </>
         
     );
