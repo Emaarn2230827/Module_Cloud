@@ -1,80 +1,62 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Header from '../Components/header';
-import init from '../common/init'; 
+import React, { useState, useEffect } from 'react';
+import { useRouter } from "next/navigation";
 
-export default function AddTask() {
-    const { auth } = init();
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        status: 'todo',
-        startDate: '',
-        deadline: ''
-    });
-    const [error, setError] = useState('');
+
+export default function ModifTaskForm({ params }) {
+    const [task, setTask] = useState({});
     const router = useRouter();
 
-    // Handle form data changes
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prevState => ({
+    useEffect(() => {
+        async function fetchTask() {
+            try {
+                const response = await fetch(`http://localhost:3000/listTask/${params.id}`);
+                const json = await response.json();
+                setTask(json);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données:', error);
+            }
+        }
+
+        fetchTask();
+    }, [params.id]);
+
+    const handleChange = (event) => {
+        const { name, value, type, checked } = event.target;
+        setTask(prevState => ({
             ...prevState,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!auth.currentUser) {
-            setError('User not authenticated');
-            return;
-        }
-
-        const { currentUser } = auth;
-        const { name, description, status, startDate, deadline } = formData;
-
         try {
-            const response = await fetch('http://localhost:3000/listTask', {
-                method: 'POST',
+            await fetch(`http://localhost:3000/listTask/${params.id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    name,
-                    description,
-                    status,
-                    startDate,
-                    deadline,
-                    emailUser: currentUser.email
-                }),
+                body: JSON.stringify(task),
             });
 
-            if (response.ok) {
-                router.push('../accueil'); // Redirect to  accueil
-            } else {
-                setError('Failed to add task');
-            }
+            router.push('../accueil'); 
         } catch (error) {
-            console.error(error);
-            setError('An error occurred');
+            console.error('Erreur lors de la mise à jour de la tâche:', error);
         }
     };
 
     return (
         <>
-            <Header />
+         
             <div className="container mt-5">
                 <div className="row justify-content-center">
                     <div className="col-md-8">
                         <div className="card border-0 bg-light shadow">
                             <div className="card-body p-5 contenuLambda">
-                                <h2 className="card-title text-center mb-4">Add a Task</h2>
-                                {error && <p className="text-danger">{error}</p>}
+                                <h2 className="card-title text-center mb-4">Update a Task</h2>
                                 <form onSubmit={handleSubmit}>
                                     <div className="form-group">
                                         <label htmlFor="name">Name of the task</label>
@@ -83,7 +65,7 @@ export default function AddTask() {
                                             className="form-control"
                                             id="name"
                                             name="name"
-                                            value={formData.name}
+                                            value={task.name || ''}
                                             onChange={handleChange}
                                             required
                                         />
@@ -94,10 +76,10 @@ export default function AddTask() {
                                             className="form-control"
                                             id="description"
                                             name="description"
-                                            value={formData.description}
+                                            value={task.description || ''}
                                             onChange={handleChange}
                                             required
-                                        />
+                                        ></textarea>
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor="status">Status</label>
@@ -105,11 +87,11 @@ export default function AddTask() {
                                             className="form-control"
                                             id="status"
                                             name="status"
-                                            value={formData.status}
+                                            value={task.status || 'todo'}
                                             onChange={handleChange}
                                             required
                                         >
-                                            <option value="todo">To Do</option>
+                                            <option value="todo">To do</option>
                                             <option value="doing">Doing</option>
                                             <option value="done">Done</option>
                                         </select>
@@ -121,7 +103,7 @@ export default function AddTask() {
                                             className="form-control"
                                             id="startDate"
                                             name="startDate"
-                                            value={formData.startDate}
+                                            value={task.startDate || ''}
                                             onChange={handleChange}
                                             required
                                         />
@@ -133,12 +115,12 @@ export default function AddTask() {
                                             className="form-control"
                                             id="deadline"
                                             name="deadline"
-                                            value={formData.deadline}
+                                            value={task.deadline || ''}
                                             onChange={handleChange}
                                             required
                                         />
                                     </div>
-                                    <button type="submit" className="btn btn-primary btn-block">Save</button>
+                                    <button type="submit" className="btn btn-primary btn-block">Update</button>
                                 </form>
                             </div>
                         </div>
