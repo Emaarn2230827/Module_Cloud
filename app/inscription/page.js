@@ -37,7 +37,7 @@ export function Inscription() {
         <div className="col-md-6">
           <div className="card border-0 bg-light shadow">
             <div className="card-body p-5">
-              <h2 className="card-title text-center mb-4">create an account ToDoList</h2>
+              <h2 className="card-title text-center mb-4">Create an Account ToDoList</h2>
               <form onSubmit={submitForm}>
                 <div className="form-group">
                   <label htmlFor="email">Email *</label>
@@ -62,7 +62,7 @@ export function Inscription() {
                     <small className="form-text text-danger">Your password must be at least 8 characters long.</small>
                 </div>
                 <br />
-                <button type="submit" className="btn btn-danger btn-block">save</button>
+                <button type="submit" className="btn btn-danger btn-block">Save</button>
               </form>
             </div>
           </div>

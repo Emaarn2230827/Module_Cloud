@@ -32,7 +32,7 @@ export function Login() {
         <div className="col-md-6">
           <div className="card border-0 bg-light shadow">
             <div className="card-body p-5">
-              <h2 className="card-title text-center mb-4">Welcome on ToDoList </h2>
+              <h2 className="card-title text-center mb-4">Welcome to ToDoList </h2>
               <p>Don't have an account?  
                 <Link href="/inscription" passHref>
                  Sign Up
@@ -61,7 +61,7 @@ export function Login() {
                   />
                 </div>
                 <br />
-                <button type="submit" className="btn btn-primary btn-block">login</button>
+                <button type="submit" className="btn btn-primary btn-block">Login</button>
               </form>
             </div>
           </div>
