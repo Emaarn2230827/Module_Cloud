@@ -32,7 +32,7 @@ function TaskCard({ id, name, description,status, startDate, deadline }) {
                     <p className="card-text">Status: {status}</p>
                     <p className="card-text">Start Date: {startDate}</p>
                     <p className="card-text">Deadline: {deadline}</p>
-                   <button type="button" className="btn btn-primary margin:30px"><Link href={`../modifTask/${id}`} className="text-white">Edit</Link></button>
+                   <button type="button" className="btn btn-primary "><Link href={`../modifTask/${id}`} className="text-white">Edit</Link></button>
                    <button type="button" className="btn btn-danger"><Link href="/accueil" className="text-white" onClick={() => handleDeleteTask(id)}>Delete</Link></button>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 {
   "listTask": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Task 1",
       "description": "Description Task 1",
       "status": "init",
@@ -10,7 +10,7 @@
       "emailUser": "exemple@gmail.com"
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "Task 2",
       "description": "Description Task 2",
       "status": "init",
@@ -19,7 +19,7 @@
       "emailUser": "test3@cegep.ca"
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "Task 3",
       "description": "Description Task 3",
       "status": "init",
@@ -35,6 +35,15 @@
       "startDate": "2024-08-24",
       "deadline": "2024-08-30",
       "emailUser": "test3@cegep.ca"
+    },
+    {
+      "id": "ea63",
+      "name": "rt",
+      "description": "sdfsdfsdf",
+      "status": "done",
+      "startDate": "2024-08-27",
+      "deadline": "2024-08-27",
+      "emailUser": "test8@cegep.ca"
     }
   ]
 }
