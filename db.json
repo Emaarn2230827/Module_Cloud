@@ -4,7 +4,7 @@
       "id": "1",
       "name": "Task 1",
       "description": "Description Task 1",
-      "status": "init",
+      "status": "todo",
       "startDate": "2022-05-01",
       "deadline": "2022-05-10",
       "emailUser": "exemple@gmail.com"
