@@ -4,7 +4,7 @@
       "id": "1",
       "name": "Task 1",
       "description": "Description Task 1",
-      "status": "todo",
+      "status": "done",
       "startDate": "2022-05-01",
       "deadline": "2022-05-10",
       "emailUser": "exemple@gmail.com"
@@ -22,7 +22,7 @@
       "id": "3",
       "name": "Task 3",
       "description": "Description Task 3",
-      "status": "init",
+      "status": "doing",
       "startDate": "2022-05-01",
       "deadline": "2022-05-10",
       "emailUser": "test4@cegep.ca"
@@ -52,6 +52,15 @@
       "status": "todo",
       "startDate": "2024-09-05",
       "deadline": "2024-09-07",
+      "emailUser": "exemple@gmail.com"
+    },
+    {
+      "id": "6a82",
+      "name": "Task 2",
+      "description": "hdfgcfgdfgdfh",
+      "status": "todo",
+      "startDate": "2024-08-14",
+      "deadline": "2024-08-24",
       "emailUser": "exemple@gmail.com"
     }
   ]
