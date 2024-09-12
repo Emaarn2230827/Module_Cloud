@@ -4,27 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../Components/header';
 import init from '../common/init'; 
+import { collection, addDoc, setDoc, doc } from "firebase/firestore"
 
 export default function AddTask() {
+    const { db } = init();
     const { auth } = init();
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        status: 'todo',
-        startDate: '',
-        deadline: ''
-    });
     const [error, setError] = useState('');
     const router = useRouter();
-
-    // Handle form data changes
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
-    };
+  
 
     // Handle form submission
     const handleSubmit = async (e) => {
@@ -36,29 +23,20 @@ export default function AddTask() {
         }
 
         const { currentUser } = auth;
-        const { name, description, status, startDate, deadline } = formData;
-
         try {
-            const response = await fetch('http://localhost:3000/listTask', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name,
-                    description,
-                    status,
-                    startDate,
-                    deadline,
-                    emailUser: currentUser.email
-                }),
+            const TaskDocRef = collection(db, "ListTask");
+            await addDoc( TaskDocRef, {
+                  name: e.target.name.value
+                , description: e.target.description.value
+                , status: e.target.status.value
+                , startDate: e.target.startDate.value
+                , deadline: e.target.deadline.value
+                , userId: currentUser.uid
             });
+            console.log("Document written with ID: ",TaskDocRef.id)
 
-            if (response.ok) {
-                router.push('../accueil'); // Redirect to  accueil
-            } else {
-                setError('Failed to add task');
-            }
+            router.push('../accueil'); // Redirect to  accueil
+   
         } catch (error) {
             console.error(error);
             setError('An error occurred');
@@ -82,9 +60,7 @@ export default function AddTask() {
                                             type="text"
                                             className="form-control"
                                             id="name"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
+                                            name="name"                         
                                             required
                                         />
                                     </div>
@@ -94,8 +70,6 @@ export default function AddTask() {
                                             className="form-control"
                                             id="description"
                                             name="description"
-                                            value={formData.description}
-                                            onChange={handleChange}
                                             required
                                         />
                                     </div>
@@ -104,9 +78,7 @@ export default function AddTask() {
                                         <select
                                             className="form-control"
                                             id="status"
-                                            name="status"
-                                            value={formData.status}
-                                            onChange={handleChange}
+                                            name="status"                                
                                             required
                                         >
                                             <option value="todo">To Do</option>
@@ -121,8 +93,6 @@ export default function AddTask() {
                                             className="form-control"
                                             id="startDate"
                                             name="startDate"
-                                            value={formData.startDate}
-                                            onChange={handleChange}
                                             required
                                         />
                                     </div>
@@ -133,8 +103,6 @@ export default function AddTask() {
                                             className="form-control"
                                             id="deadline"
                                             name="deadline"
-                                            value={formData.deadline}
-                                            onChange={handleChange}
                                             required
                                         />
                                     </div>
