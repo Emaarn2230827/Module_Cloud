@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import TaskCard from './taskCard';
 import init from '../common/init';
+import { collection, getDocs, query, where } from "firebase/firestore"
 
 function TaskList() {
-    const [tasks, setTasks] = useState([]);
+    const { db } = init();
     const [loading, setLoading] = useState(true);
-   
+    const [snapshot, setSnapshot] = useState([]);
     
     useEffect(() => {
         async function fetchTask() {
@@ -20,16 +21,18 @@ function TaskList() {
         }
         const { currentUser } = auth;
         
-            try {             
-                const response = await fetch('http://localhost:3000/listTask?emailUser=' + user.email);
-                
-                if (!response.ok) {
-                    throw new Error('Erreur de réseau ou serveur indisponible');
-                }
-                
-                const json = await response.json();
+            try {      
 
-                setTasks(json);
+                // Recherche des tâches pour l'utilisateur connecté
+               const q = query(collection(db, "ListTask"), where("userId", "==", currentUser.uid));
+               const querySnapshot = await getDocs(q);
+               const fetchedTasks = [];
+                querySnapshot.forEach((doc) => {
+                    fetchedTasks.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Mettre à jour l'état avec le tableau de tâches
+                setSnapshot(fetchedTasks);
                 setLoading(false);
             } catch (error) {
                console.error(error);
@@ -51,9 +54,9 @@ function TaskList() {
             <div className="row align-items-center" >
             {loading ? (
                     <p>loading...</p>
-                ) : tasks.length > 0 ? (
-                tasks.map(ts => (
-                    <TaskCard key={ts.id} id={ts.id} name={ts.name} description={ts.description} status={ts.status} startDate={ts.startDate} deadline={ts.deadline}/>
+                ) : snapshot.length > 0 ? (
+                    snapshot.map(ts => (
+                    <TaskCard key={ts.id} name={ts.name} description={ts.description} status={ts.status} startDate={ts.startDate} deadline={ts.deadline}/>
                 ))
             ) : (
                 <h1 className="scrolling-text">No task found</h1>

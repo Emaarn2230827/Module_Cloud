@@ -13,7 +13,7 @@
       "id": "2",
       "name": "Task 2",
       "description": "Description Task 2",
-      "status": "init",
+      "status": "todo",
       "startDate": "2022-05-01",
       "deadline": "2022-05-10",
       "emailUser": "test3@cegep.ca"
