@@ -1,16 +1,31 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from "next/image";
 import Link from "next/link";
 import init from '../common/init'
 import { signOut } from "firebase/auth"
+import {getStorage, ref, listAll, getDownloadURL} from "firebase/storage"
 
 
 function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
     const {auth} = init()
+    const user = auth.currentUser;
     const router = useRouter();
+    const [imageFiles, setImageFiles] = useState([])
+    const storage = getStorage()
+    useEffect(() => {
+        if(!user){
+            router.push('../login')
+            return
+        }
+        const listRef = ref(storage, `${user.uid}/ProfilePicture`)
+        listAll(listRef)
+            .then(res => {
+                const downloads = res.items.map((itemRef) => getDownloadURL(itemRef))
+                Promise.all(downloads).then(setImageFiles)
+            })
+      }, [])
   //Appelé lorsqu'on envoie le formulaire
   function logOut(e){
     e.preventDefault()
@@ -49,7 +64,8 @@ function Header() {
                             </li>
                             <li className="nav-item col-lg-2 " >
                             <a href="#" className="nav-link mx-5" onClick={logOut}>
-                                    <Image src="/images/logoConnexion.png" alt="logoConnexion" id="logoConnexion" width={70} height={70}/>
+                            {imageFiles.map((file,i) => 
+                                    <img  key={i} src={file} alt="logoConnexion" id="logoConnexion" className='rounded-circle' width={70} height={70}/> )}
                             </a>
                             </li>
                         </ul>

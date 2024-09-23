@@ -6,7 +6,8 @@ import init from '../common/init';
 import {  deleteDoc, doc } from "firebase/firestore"
 import { useRouter } from "next/navigation";
 
-function TaskCard({ id, name, description, status, startDate, deadLine }) {
+
+function TaskCard({ id, name, description, status, startDate, deadLine, image }) {
     const {db, auth} = init()
     const router = useRouter();
     const handleDeleteTask = async () => {
@@ -41,6 +42,7 @@ function TaskCard({ id, name, description, status, startDate, deadLine }) {
             <div className="card" style={cardStyle}>
                 <div className="card-body">
                     <h5 className="card-title"> {name}</h5>
+                   <img src={image} className="card-img-top" alt="image" width={380} height={250}/>
                     <p className="card-text">Description: {description}</p>
                     <p className="card-text">Status: {status}</p>
                     <p className="card-text">Start Date: {startDate}</p>

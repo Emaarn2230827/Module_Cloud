@@ -5,12 +5,14 @@ import TaskCard from './taskCard';
 import init from '../common/init';
 import { collection,query, where, getDocs } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-
+import {getStorage, ref, listAll, getDownloadURL} from "firebase/storage"
 function TaskList() {
     const { db, auth } = init();
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const router = useRouter();
+    const [imageFiles, setImageFiles] = useState([])
+    const storage = getStorage()
     useEffect(() => {
         const user = auth.currentUser;
         if(!user){
@@ -22,9 +24,16 @@ function TaskList() {
             try {
                 //  requête permettant de ne recharger que les documents de l'utilisateur connecté
                 const q = query(collection(db, "ListTask"), where("userId", "==", user.uid));
-        
+                const listRef = ref(storage, `${user.uid}/TaskPictures`)
+                listAll(listRef)
+                    .then(res => {
+                        const downloads = res.items.map((itemRef) => getDownloadURL(itemRef))
+                        Promise.all(downloads).then(setImageFiles)
+                    })
                 const querySnapshot = await getDocs(q);
+             
                 setTasks(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data()})));
+
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching tasks: ", error);
@@ -57,6 +66,7 @@ function TaskList() {
                             status={task.status}
                             startDate={task.startDate}
                             deadLine={task.deadLine}
+                            image={imageFiles[index]}
                         />
                     ))
                 ) : (
