@@ -3,31 +3,51 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import Header from '@/app/Components/header';
+import init from '@/app/common/init';
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 
 export default function ModifTaskForm({ params }) {
-    const [task, setTask] = useState({});
-    const router = useRouter();
-
+     const router = useRouter();
+    const { db, auth } = init();
+   
+    const [task, setTask] = useState({
+        name: '',
+        description: '',
+        status: 'todo',
+        startDate: '',
+        deadLine: ''
+    });
+   
     useEffect(() => {
+        const user = auth.currentUser;
+        if(!user){
+            console.log('User not authenticated');
+            router.push('../login');
+            return;
+        }
         async function fetchTask() {
             try {
-                const response = await fetch(`http://localhost:3000/listTask/${params.id}`);
-                const json = await response.json();
-                setTask(json);
+
+                const docRef = await getDoc(doc(db, "ListTask", params.id)); 
+                if(docRef.exists()){
+                    setTask(docRef.data());
+                } else {
+                    console.log('no such document');
+                }
             } catch (error) {
                 console.error('Erreur lors de la récupération des données:', error);
             }
         }
 
         fetchTask();
-    }, [params.id]);
+    }, [params.id, db, auth, router]);
 
     const handleChange = (event) => {
-        const { name, value, type, checked } = event.target;
+        const { name, value} = event.target;
         setTask(prevState => ({
             ...prevState,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
     };
 
@@ -35,14 +55,7 @@ export default function ModifTaskForm({ params }) {
         e.preventDefault();
 
         try {
-            await fetch(`http://localhost:3000/listTask/${params.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(task),
-            });
-
+            await updateDoc(doc(db, "ListTask", params.id), task)
             router.push('../accueil'); 
         } catch (error) {
             console.error('Erreur lors de la mise à jour de la tâche:', error);
@@ -66,7 +79,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="name"
                                             name="name"
-                                            value={task.name || ''}
+                                            value={task.name}
                                             onChange={handleChange}
                                             required
                                         />
@@ -77,7 +90,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="description"
                                             name="description"
-                                            value={task.description || ''}
+                                            value={task.description}
                                             onChange={handleChange}
                                             required
                                         ></textarea>
@@ -88,7 +101,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="status"
                                             name="status"
-                                            value={task.status || 'todo'}
+                                            value={task.status}
                                             onChange={handleChange}
                                             required
                                         >
@@ -104,7 +117,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="startDate"
                                             name="startDate"
-                                            value={task.startDate || ''}
+                                            value={task.startDate}
                                             onChange={handleChange}
                                             required
                                         />
@@ -116,7 +129,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="deadline"
                                             name="deadline"
-                                            value={task.deadline || ''}
+                                            value={task.deadLine}
                                             onChange={handleChange}
                                             required
                                         />
