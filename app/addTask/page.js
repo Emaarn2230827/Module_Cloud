@@ -11,7 +11,12 @@ export default function AddTask() {
     const { auth } = init();
     const [error, setError] = useState('');
     const router = useRouter();
-  
+    const user = auth.currentUser;
+    if(!user){
+        console.log('User not authenticated');
+        router.push('../login');
+        return;
+    }
 
     // Handle form submission
     const handleSubmit = async (e) => {
@@ -30,7 +35,7 @@ export default function AddTask() {
                 , description: e.target.description.value
                 , status: e.target.status.value
                 , startDate: e.target.startDate.value
-                , deadline: e.target.deadline.value
+                , deadLine: e.target.deadLine.value
                 , userId: currentUser.uid
             });
             console.log("Document written with ID: ",TaskDocRef.id)
@@ -97,12 +102,12 @@ export default function AddTask() {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="deadline">Deadline</label>
+                                        <label htmlFor="deadLine">DeadLine</label>
                                         <input
                                             type="date"
                                             className="form-control"
-                                            id="deadline"
-                                            name="deadline"
+                                            id="deadLine"
+                                            name="deadLine"
                                             required
                                         />
                                     </div>
