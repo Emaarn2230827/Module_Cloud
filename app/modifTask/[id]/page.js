@@ -60,12 +60,18 @@ export default function ModifTaskForm({ params }) {
             const imageUpdate = e.target.imageUpdate.files[0];
 
             if (imageUpdate) {
+                    // Vérifier si le fichier est une image 
+                    if (!imageUpdate.type.startsWith('image/')) {
+                        alert('Veuillez sélectionner un fichier image.');
+                        return;
+                    }
                 const refFile = ref(storage, `${user.uid}/TaskPictures/${imageUpdate.name}`);
                 await uploadBytes(refFile, imageUpdate);
-                imageUrl = await getDownloadURL(refFile); // Obtenez la nouvelle URL
+                imageUrl = await getDownloadURL(refFile); // Obtention de la nouvelle URL
+                console.log(imageUrl);
             }
 
-            // Mettez à jour le document avec l'URL de l'image (ancienne ou nouvelle)
+            // Mettre à jour le document avec l'URL de l'image (ancienne ou nouvelle)
             await updateDoc(doc(db, "ListTask", params.id), {
                 ...task,
                 image: imageUrl // Mettez à jour l'image ici
@@ -157,16 +163,18 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             name="image"
                                             value={task.image}
-                                            onChange={handleChange}
                                             readOnly
                                         />
+                                        {task.image && (
+                                            <img src={task.image} alt="Task Image" style={{ maxWidth: '100%', marginTop: '10px' }} />
+                                        )}
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor='imageUpdate'>Update Task Image</label>
                                         <input
                                             id="imageUpdate"
                                             type="file"
-                                            className="form-control"
+                                            className="form-control"                                     
                                             name="imageUpdate"
                                         />
                                     </div>
