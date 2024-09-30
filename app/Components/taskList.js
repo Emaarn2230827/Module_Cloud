@@ -57,6 +57,8 @@ function TaskList() {
         }
 
         fetchTask();
+        const interval = setInterval(fetchTask, 500);
+        return () => clearInterval(interval);
     }, [db, auth, router]);
 
     return (
