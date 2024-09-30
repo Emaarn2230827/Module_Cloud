@@ -63,10 +63,10 @@ function Header() {
                                 <Link className="nav-link mx-5" href="../addTask">➕Add a Task</Link>
                             </li>
                             <li className="nav-item col-lg-2 " >
-                            <a href="#" className="nav-link mx-5" onClick={logOut}>
+                            <Link href={`../Profil/${user.uid}`} className="nav-link mx-5" >
                             {imageFiles.map((file,i) => 
                                     <img  key={i} src={file} alt="logoConnexion" id="logoConnexion" className='rounded-circle' width={70} height={70}/> )}
-                            </a>
+                            </Link>
                             </li>
                         </ul>
                     </div>
