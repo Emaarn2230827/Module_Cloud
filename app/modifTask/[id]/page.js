@@ -3,53 +3,52 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import Header from '@/app/Components/header';
-import init from '@/app/common/init'
-import {  getDoc,updateDoc, doc } from "firebase/firestore"
-
+import init from '@/app/common/init';
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function ModifTaskForm({ params }) {
+    const router = useRouter();
+    const { db, auth } = init();
+    const storage = getStorage();
+    const user = auth.currentUser;
+
     const [task, setTask] = useState({
         name: '',
         description: '',
         status: 'todo',
         startDate: '',
-        deadLine: ''
+        deadLine: '',
+        image: '',
     });
-    const router = useRouter();
-    const { auth, db } = init();
 
     useEffect(() => {
+        if (!user) {
+            console.log('User not authenticated');
+            router.push('../login');
+            return;
+        }
         async function fetchTask() {
             try {
-
-                const user = auth.currentUser;
-
-                if (!user) {
-                    console.log('User not authenticated');
-                    router.push('../login');
-                    return;
+                const docRef = await getDoc(doc(db, "ListTask", params.id));
+                if (docRef.exists()) {
+                    setTask(docRef.data());
+                } else {
+                    console.log('No such document');
                 }
-
-                // Recherche de la tâche correspondante avace params.id
-                const response = await getDoc(doc(db, "ListTask",params.id));
-                if(response != null) {
-                    setTask(response.data());
-                    console.log(response);
-                }
-               
             } catch (error) {
-                console.error('Erreur lors de la récupération des données:', error);
+                console.error('Error fetching task:', error);
             }
         }
 
         fetchTask();
-    }, [params.id]);
+    }, [params.id, db, auth, router]);
 
     const handleChange = (event) => {
-        const { name, value, type, checked } = event.target;
+        const { name, value } = event.target;
         setTask(prevState => ({
             ...prevState,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
     };
 
@@ -57,17 +56,36 @@ export default function ModifTaskForm({ params }) {
         e.preventDefault();
 
         try {
-           
-            await updateDoc(doc(db, "ListTask", params.id), task);
-            router.push('../accueil'); 
+            let imageUrl = task.image; // Garder l'URL d'origine par défaut
+            const imageUpdate = e.target.imageUpdate.files[0];
+
+            if (imageUpdate) {
+                    // Vérifier si le fichier est une image 
+                    if (!imageUpdate.type.startsWith('image/')) {
+                        alert('Veuillez sélectionner un fichier image.');
+                        return;
+                    }
+                const refFile = ref(storage, `${user.uid}/TaskPictures/${imageUpdate.name}`);
+                await uploadBytes(refFile, imageUpdate);
+                imageUrl = await getDownloadURL(refFile); // Obtention de la nouvelle URL
+                console.log(imageUrl);
+            }
+
+            // Mettre à jour le document avec l'URL de l'image (ancienne ou nouvelle)
+            await updateDoc(doc(db, "ListTask", params.id), {
+                ...task,
+                image: imageUrl // Mettez à jour l'image ici
+            });
+
+            router.push('../accueil');
         } catch (error) {
-            console.error('Erreur lors de la mise à jour de la tâche:', error);
+            console.error('Error updating task:', error);
         }
     };
 
     return (
         <>
-         <Header/>
+            <Header />
             <div className="container mt-5">
                 <div className="row justify-content-center">
                     <div className="col-md-8">
@@ -120,23 +138,47 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="startDate"
                                             name="startDate"
-                                            value={task.startDate }
+                                            value={task.startDate}
                                             onChange={handleChange}
                                             required
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="deadline">Deadline</label>
+                                        <label htmlFor="deadLine">Deadline</label>
                                         <input
                                             type="date"
                                             className="form-control"
-                                            id="deadline"
-                                            name="deadline"
-                                            value={task.deadLine }
+                                            id="deadLine"
+                                            name="deadLine"
+                                            value={task.deadLine}
                                             onChange={handleChange}
                                             required
                                         />
                                     </div>
+                                    <div className="form-group">
+                                        <label htmlFor='image'>Current Image</label>
+                                        <input
+                                            id="image"
+                                            type="text"
+                                            className="form-control"
+                                            name="image"
+                                            value={task.image}
+                                            readOnly
+                                        />
+                                        {task.image && (
+                                            <img src={task.image} alt="Task Image" style={{ maxWidth: '40%', marginTop: '10px' }} />
+                                        )}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor='imageUpdate'>Update Task Image</label>
+                                        <input
+                                            id="imageUpdate"
+                                            type="file"
+                                            className="form-control"                                     
+                                            name="imageUpdate"
+                                        />
+                                    </div>
+                                    <br />
                                     <button type="submit" className="btn btn-primary btn-block">Update</button>
                                 </form>
                             </div>
