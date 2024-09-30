@@ -4,19 +4,20 @@ import React, { useState, useEffect } from 'react';
 import TaskCard from './taskCard';
 import init from '../common/init';
 import { collection, getDocs, query, where } from "firebase/firestore"
+import { useRouter } from 'next/navigation';
 
 function TaskList() {
-    const { db } = init();
+    const { db, auth } = init();
     const [loading, setLoading] = useState(true);
     const [snapshot, setSnapshot] = useState([]);
+    const router = useRouter();
     
     useEffect(() => {
         async function fetchTask() {
-
-            const {auth} = init()
             const user = auth.currentUser;
         if (!auth.currentUser) {
             console.log('User not authenticated');
+            router.push('../login');
             return;
         }
         const { currentUser } = auth;
@@ -56,7 +57,7 @@ function TaskList() {
                     <p>loading...</p>
                 ) : snapshot.length > 0 ? (
                     snapshot.map(ts => (
-                    <TaskCard key={ts.id} name={ts.name} description={ts.description} status={ts.status} startDate={ts.startDate} deadline={ts.deadline}/>
+                    <TaskCard key={ts.id} id={ts.id} name={ts.name} description={ts.description} status={ts.status} startDate={ts.startDate} deadLine={ts.deadLine}/>
                 ))
             ) : (
                 <h1 className="scrolling-text">No task found</h1>

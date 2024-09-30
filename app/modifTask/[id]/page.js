@@ -3,18 +3,40 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import Header from '@/app/Components/header';
+import init from '@/app/common/init'
+import {  getDoc,updateDoc, doc } from "firebase/firestore"
 
 
 export default function ModifTaskForm({ params }) {
-    const [task, setTask] = useState({});
+    const [task, setTask] = useState({
+        name: '',
+        description: '',
+        status: 'todo',
+        startDate: '',
+        deadLine: ''
+    });
     const router = useRouter();
+    const { auth, db } = init();
 
     useEffect(() => {
         async function fetchTask() {
             try {
-                const response = await fetch(`http://localhost:3000/listTask/${params.id}`);
-                const json = await response.json();
-                setTask(json);
+
+                const user = auth.currentUser;
+
+                if (!user) {
+                    console.log('User not authenticated');
+                    router.push('../login');
+                    return;
+                }
+
+                // Recherche de la tâche correspondante avace params.id
+                const response = await getDoc(doc(db, "ListTask",params.id));
+                if(response != null) {
+                    setTask(response.data());
+                    console.log(response);
+                }
+               
             } catch (error) {
                 console.error('Erreur lors de la récupération des données:', error);
             }
@@ -35,14 +57,8 @@ export default function ModifTaskForm({ params }) {
         e.preventDefault();
 
         try {
-            await fetch(`http://localhost:3000/listTask/${params.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(task),
-            });
-
+           
+            await updateDoc(doc(db, "ListTask", params.id), task);
             router.push('../accueil'); 
         } catch (error) {
             console.error('Erreur lors de la mise à jour de la tâche:', error);
@@ -66,7 +82,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="name"
                                             name="name"
-                                            value={task.name || ''}
+                                            value={task.name}
                                             onChange={handleChange}
                                             required
                                         />
@@ -77,7 +93,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="description"
                                             name="description"
-                                            value={task.description || ''}
+                                            value={task.description}
                                             onChange={handleChange}
                                             required
                                         ></textarea>
@@ -88,7 +104,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="status"
                                             name="status"
-                                            value={task.status || 'todo'}
+                                            value={task.status}
                                             onChange={handleChange}
                                             required
                                         >
@@ -104,7 +120,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="startDate"
                                             name="startDate"
-                                            value={task.startDate || ''}
+                                            value={task.startDate }
                                             onChange={handleChange}
                                             required
                                         />
@@ -116,7 +132,7 @@ export default function ModifTaskForm({ params }) {
                                             className="form-control"
                                             id="deadline"
                                             name="deadline"
-                                            value={task.deadline || ''}
+                                            value={task.deadLine }
                                             onChange={handleChange}
                                             required
                                         />
