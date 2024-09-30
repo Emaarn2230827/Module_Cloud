@@ -3,13 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import init from '../common/init';
-import {  deleteDoc, doc } from "firebase/firestore"
+import {  deleteDoc, doc, getDoc } from "firebase/firestore"
 import { useRouter } from "next/navigation";
+import { getStorage, ref, deleteObject } from "firebase/storage";
 
 
 function TaskCard({ id, name, description, status, startDate, deadLine, image }) {
     const {db, auth} = init()
     const router = useRouter();
+    const storage = getStorage();
     const handleDeleteTask = async () => {
         try {
         const user = auth.currentUser;
@@ -19,8 +21,23 @@ function TaskCard({ id, name, description, status, startDate, deadLine, image })
             return;
         }
 
-        await deleteDoc(doc(db, "ListTask", id));      
-        console.log("Document supprimé")
+        const documentRef = doc(db, "ListTask", id);
+        const documentSnapshot = await getDoc(documentRef);
+
+        if (documentSnapshot.exists()) {
+            const documentData = documentSnapshot.data();
+        
+            if (documentData.image) {
+                console.log("documentData.image: " + documentData.image);
+                const imageRef = ref(storage, documentData.image);
+                await deleteObject(imageRef);
+            }
+        
+            await deleteDoc(documentRef);
+            console.log("Document supprimé");
+        } else {
+            console.log("Le document n'existe pas");
+        }
         } catch (err) {
             console.error("Error deleting document: ", err);
             console.log("id: "+id);
