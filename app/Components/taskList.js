@@ -3,37 +3,52 @@
 import React, { useState, useEffect } from 'react';
 import TaskCard from './taskCard';
 import init from '../common/init';
-import { collection,query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import {getStorage, ref, listAll, getDownloadURL} from "firebase/storage"
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+
 function TaskList() {
     const { db, auth } = init();
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const [imageFiles, setImageFiles] = useState([])
-    const storage = getStorage()
+    const storage = getStorage();
+
     useEffect(() => {
         const user = auth.currentUser;
-        if(!user){
+        if (!user) {
             console.log('User not authenticated');
             router.push('../login');
             return;
         }
-        async function fetchTask() {       
-            try {
-                //  requête permettant de ne recharger que les documents de l'utilisateur connecté
-                const q = query(collection(db, "ListTask"), where("userId", "==", user.uid));
-                const listRef = ref(storage, `${user.uid}/TaskPictures`)
-                listAll(listRef)
-                    .then(res => {
-                        const downloads = res.items.map((itemRef) => getDownloadURL(itemRef))
-                        Promise.all(downloads).then(setImageFiles)
-                    })
-                const querySnapshot = await getDocs(q);
-             
-                setTasks(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data()})));
 
+        async function fetchTask() {
+            try {
+                // Requête pour ne récupérer que les tâches de l'utilisateur connecté
+                const q = query(collection(db, "ListTask"), where("userId", "==", user.uid));
+                // récupératyion du résultat de la requête précédente, donc toutes les tâches de l'utilisateur seront stockées dans la variable querySnapshot
+                const querySnapshot = await getDocs(q);
+                //promise.all() permet de garamtir que toute les promsesses soient résolues, garantissant ainsi que toutes les iamges sont récupérées avant l'update de l'application
+                const tasksWithImages = await Promise.all(
+                    //  querySnapshot.docs.map permet de faire une iteration sur tous les documents de la requête
+                    querySnapshot.docs.map(async (doc) => {
+                        // doc.data() contient les données de la tâche sous la forme d'un objet
+                        const taskData = doc.data();
+
+                        // Si la tâche contient une image, on récupère l'URL de téléchargement
+                        if (taskData.image) {
+                            // imageRef contient la reference de l'image
+                            const imageRef = ref(storage, taskData.image);
+                            //imageUrl contient l'URL de telechargement
+                            const imageUrl = await getDownloadURL(imageRef);
+                            return { id: doc.id, ...taskData, image: imageUrl }; // Ajout de l'URL de l'image à la tâche
+                        }
+                        
+                        return { id: doc.id, ...taskData };
+                    })
+                );
+                // update de l'état de task avec les tâches et leurs images(si existantes)
+                setTasks(tasksWithImages);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching tasks: ", error);
@@ -42,14 +57,7 @@ function TaskList() {
         }
 
         fetchTask();
-
-        const intervalId = setInterval(fetchTask, 500);
-
-        // Nettoyage de l'intervalle lors du démontage du composant
-        return () => {
-            clearInterval(intervalId); 
-        };
-    }, [db, auth]);
+    }, [db, auth, router]);
 
     return (
         <div className="container-fluid">
@@ -66,7 +74,7 @@ function TaskList() {
                             status={task.status}
                             startDate={task.startDate}
                             deadLine={task.deadLine}
-                            image={imageFiles[index]}
+                            image={task.image || ""} // Si aucune image,on affiche une chaîne vide
                         />
                     ))
                 ) : (
