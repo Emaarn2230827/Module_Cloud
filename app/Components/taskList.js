@@ -26,23 +26,28 @@ function TaskList() {
             try {
                 // Requête pour ne récupérer que les tâches de l'utilisateur connecté
                 const q = query(collection(db, "ListTask"), where("userId", "==", user.uid));
+                // récupératyion du résultat de la requête précédente, donc toutes les tâches de l'utilisateur seront stockées dans la variable querySnapshot
                 const querySnapshot = await getDocs(q);
-
+                //promise.all() permet de garamtir que toute les promsesses soient résolues, garantissant ainsi que toutes les iamges sont récupérées avant l'update de l'application
                 const tasksWithImages = await Promise.all(
+                    //  querySnapshot.docs.map permet de faire une iteration sur tous les documents de la requête
                     querySnapshot.docs.map(async (doc) => {
+                        // doc.data() contient les données de la tâche sous la forme d'un objet
                         const taskData = doc.data();
 
-                        // Si la tâche contient une image, récupérer l'URL de téléchargement
+                        // Si la tâche contient une image, on récupère l'URL de téléchargement
                         if (taskData.image) {
+                            // imageRef contient la reference de l'image
                             const imageRef = ref(storage, taskData.image);
+                            //imageUrl contient l'URL de telechargement
                             const imageUrl = await getDownloadURL(imageRef);
-                            return { id: doc.id, ...taskData, image: imageUrl }; // Ajouter l'URL de l'image à la tâche
+                            return { id: doc.id, ...taskData, image: imageUrl }; // Ajout de l'URL de l'image à la tâche
                         }
                         
                         return { id: doc.id, ...taskData };
                     })
                 );
-
+                // update de l'état de task avec les tâches et leurs images(si existantes)
                 setTasks(tasksWithImages);
                 setLoading(false);
             } catch (error) {
@@ -69,7 +74,7 @@ function TaskList() {
                             status={task.status}
                             startDate={task.startDate}
                             deadLine={task.deadLine}
-                            image={task.image || ""} // Si aucune image, définir une chaîne vide
+                            image={task.image || ""} // Si aucune image,on affiche une chaîne vide
                         />
                     ))
                 ) : (
