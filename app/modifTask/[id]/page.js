@@ -166,7 +166,7 @@ export default function ModifTaskForm({ params }) {
                                             readOnly
                                         />
                                         {task.image && (
-                                            <img src={task.image} alt="Task Image" style={{ maxWidth: '100%', marginTop: '10px' }} />
+                                            <img src={task.image} alt="Task Image" style={{ maxWidth: '40%', marginTop: '10px' }} />
                                         )}
                                     </div>
                                     <div className="form-group">
