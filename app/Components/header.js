@@ -100,7 +100,7 @@ function Header() {
                     <div className={`contenuLambda col-6 col-lg-9 align-items-center collapse navbar-collapse ${menuOpen ? 'show' : ''}`} id="navbarNav ">
                         <ul className="navbar-nav align-items-center col-lg-12 ">
                             <li className="nav-item col-lg-5">
-                                <Link href="/accueil" className="nav-link mx-5">My ToDoList</Link>
+                                <Link href="/accueil" className="nav-link mx-5">My ToDoList📋</Link>
                             </li>
                             <li className="nav-item col-lg-5">
                                 <Link className="nav-link mx-5" href="../addTask">➕Add a Task</Link>
