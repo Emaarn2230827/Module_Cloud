@@ -17,7 +17,7 @@ function TaskList() {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        // Surveiller les changements d'état d'authentification
+        // Pour Surveiller les changements d'état d'authentification
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             if (currentUser) {
                 setUser(currentUser);
