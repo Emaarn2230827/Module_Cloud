@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import Header from '@/app/Components/header';
 import init from '@/app/common/init';
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function ModifTaskForm({ params }) {
     const router = useRouter();
     const { db, auth } = init();
     const storage = getStorage();
-    const [user, setUser] = useState(null);
+    const user = auth.currentUser;
+
     const [task, setTask] = useState({
         name: '',
         description: '',
@@ -23,29 +23,16 @@ export default function ModifTaskForm({ params }) {
     });
 
     useEffect(() => {
-        // Surveiller les changements d'état d'authentification
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            if (currentUser) {
-                setUser(currentUser);
-            } else {
-                // Rediriger si l'utilisateur n'est pas connecté
-                router.push('../login');
-            }
-        });
-
-        return () => unsubscribe(); // Nettoyage lors de la fin de l'utilisation
-    }, [auth, router]);
-
-    useEffect(() => {
-        if (!user) return;
-
+        if (!user) {
+            console.log('User not authenticated');
+            router.push('../login');
+            return;
+        }
         async function fetchTask() {
             try {
-                const docRef = doc(db, "ListTask", params.id);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    setTask(docSnap.data());
+                const docRef = await getDoc(doc(db, "ListTask", params.id));
+                if (docRef.exists()) {
+                    setTask(docRef.data());
                 } else {
                     console.log('No such document');
                 }
@@ -55,7 +42,7 @@ export default function ModifTaskForm({ params }) {
         }
 
         fetchTask();
-    }, [params.id, db, user]); // Remplacement de `auth` par `user`
+    }, [params.id, db, auth, router]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -73,27 +60,26 @@ export default function ModifTaskForm({ params }) {
             const imageUpdate = e.target.imageUpdate.files[0];
 
             if (imageUpdate) {
-                // Vérifier si le fichier est une image 
-                if (!imageUpdate.type.startsWith('image/')) {
-                    alert('Veuillez sélectionner un fichier image.');
-                    return;
-                }
+                    // Vérifier si le fichier est une image 
+                    if (!imageUpdate.type.startsWith('image/')) {
+                        alert('Veuillez sélectionner un fichier image.');
+                        return;
+                    }
                 const refFile = ref(storage, `${user.uid}/TaskPictures/${imageUpdate.name}`);
                 await uploadBytes(refFile, imageUpdate);
                 imageUrl = await getDownloadURL(refFile); // Obtention de la nouvelle URL
+                console.log(imageUrl);
             }
 
             // Mettre à jour le document avec l'URL de l'image (ancienne ou nouvelle)
             await updateDoc(doc(db, "ListTask", params.id), {
                 ...task,
-                image: imageUrl // Mise à jour de l'image 
+                image: imageUrl // Mettez à jour l'image ici
             });
 
-            alert('Tâche mise à jour avec succès.');
             router.push('../accueil');
         } catch (error) {
             console.error('Error updating task:', error);
-            alert('Erreur lors de la mise à jour de la tâche.'); // Message d'erreur
         }
     };
 
