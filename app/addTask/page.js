@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../Components/header';
 import init from '../common/init'; 
+import {onAuthStateChanged} from "firebase/auth"
 import { collection, addDoc} from "firebase/firestore"
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -14,13 +15,21 @@ export default function AddTask() {
     const [error, setError] = useState('');
     const router = useRouter();
     const storage = getStorage();
+    const [user, setUser] = useState(null);
    
-    const user = auth.currentUser;
-    if(!user){
-        console.log('User not authenticated');
-        router.push('../login');
-        return;
-    }
+    useEffect(() => {
+        // Surveiller les changements d'état d'authentification
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                setUser(currentUser);
+            } else {
+                // Rediriger si l'utilisateur n'est pas connecté
+                router.push('../login');
+            }
+        });
+
+        return () => unsubscribe(); // Nettoyage lors de la fin de l'utilisation
+    }, [auth, router]);
 
     // Handle form submission
     const handleSubmit = async (e) => {
